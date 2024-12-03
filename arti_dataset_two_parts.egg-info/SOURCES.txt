@@ -1,9 +1,0 @@
-LICENSE
-README.md
-setup.py
-arti_dataset_two_parts/__init__.py
-arti_dataset_two_parts/arti_dataset_two_parts_dataset_builder.py
-arti_dataset_two_parts.egg-info/PKG-INFO
-arti_dataset_two_parts.egg-info/SOURCES.txt
-arti_dataset_two_parts.egg-info/dependency_links.txt
-arti_dataset_two_parts.egg-info/top_level.txt

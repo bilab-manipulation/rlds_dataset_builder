@@ -8,7 +8,7 @@ import tensorflow_hub as hub
 import cv2
 
 
-class ArtiDatasetTwoParts(tfds.core.GeneratorBasedBuilder):
+class Sample(tfds.core.GeneratorBasedBuilder):
     """DatasetBuilder for example dataset."""
 
     VERSION = tfds.core.Version('1.0.0')
@@ -91,9 +91,9 @@ class ArtiDatasetTwoParts(tfds.core.GeneratorBasedBuilder):
     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
         """Define data splits."""
         return {
-            'train': self._generate_examples(path='data/train/traj_*.npy'),
-            # 'val': self._generate_examples(path='data/val/traj_*.npy'),
-            # 'test': self._generate_examples(path='data/test/traj_*.npy'),
+            'train': self._generate_examples(path='data/train/episode_*.npy'),
+            'val': self._generate_examples(path='data/val/episode_*.npy'),
+            # 'test': self._generate_examples(path='data/test/episode_*.npy'),
         }
 
     def _generate_examples(self, path) -> Iterator[Tuple[str, Any]]:
@@ -107,10 +107,10 @@ class ArtiDatasetTwoParts(tfds.core.GeneratorBasedBuilder):
             for i, step in enumerate(data):
                 # compute Kona language embedding
                 language_embedding = self._embed([step['language_instruction']])[0].numpy()
-                step['image'] = cv2.resize(step['image'], (224, 224)).astype(np.uint8)
+                step['base'] = cv2.resize(step['base'], (224, 224)).astype(np.uint8)
                 episode.append({
                     'observation': {
-                        'image': step['image'],
+                        'image': step['base'],
                         # 'wrist_image': step['wrist_image'],
                         # 'state': step['state'],
                     },
@@ -140,7 +140,7 @@ class ArtiDatasetTwoParts(tfds.core.GeneratorBasedBuilder):
 
         # for smallish datasets, use single-thread parsing
         for sample in episode_paths:
-            print("sampel", episode_paths)
+            print("sample", episode_paths)
             yield _parse_example(sample)
 
         # for large datasets use beam to parallelize data parsing (this will have initialization overhead)
