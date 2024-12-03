@@ -1,5 +1,10 @@
 # RLDS Dataset Conversion
 
+## Multiprocess
+```
+CUDA_VISIBLE_DEVICES=4 tfds build --overwrite --beam_pipeline_options="direct_running_mode=multi_processing,direct_num_workers=30"
+```
+
 This repo demonstrates how to convert an existing dataset into RLDS format for X-embodiment experiment integration.
 It provides an example for converting a dummy dataset to RLDS. To convert your own dataset, **fork** this repo and 
 modify the example code for your dataset following the steps below.

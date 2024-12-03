@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+arti_two_parts_js/arti_two_parts_js_dataset_builder.py
+arti_two_parts_js.egg-info/PKG-INFO
+arti_two_parts_js.egg-info/SOURCES.txt
+arti_two_parts_js.egg-info/dependency_links.txt
+arti_two_parts_js.egg-info/top_level.txt
