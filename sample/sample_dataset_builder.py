@@ -107,10 +107,10 @@ class Sample(tfds.core.GeneratorBasedBuilder):
             for i, step in enumerate(data):
                 # compute Kona language embedding
                 language_embedding = self._embed([step['language_instruction']])[0].numpy()
-                step['base'] = cv2.resize(step['base'], (224, 224)).astype(np.uint8)
+                step['front'] = cv2.resize(step['front'], (224, 224)).astype(np.uint8)
                 episode.append({
                     'observation': {
-                        'image': step['base'],
+                        'image': step['front'],
                         # 'wrist_image': step['wrist_image'],
                         # 'state': step['state'],
                     },
@@ -137,10 +137,11 @@ class Sample(tfds.core.GeneratorBasedBuilder):
         
         # create list of all examples
         episode_paths = glob.glob(path)
+        print("sample", episode_paths)
+        
 
         # for smallish datasets, use single-thread parsing
         for sample in episode_paths:
-            print("sample", episode_paths)
             yield _parse_example(sample)
 
         # for large datasets use beam to parallelize data parsing (this will have initialization overhead)
