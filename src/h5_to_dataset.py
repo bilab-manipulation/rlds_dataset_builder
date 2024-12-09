@@ -4,6 +4,63 @@ from sklearn.model_selection import train_test_split
 from pathlib import Path
 import h5py
 import argparse
+import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation as R
+
+
+def create_graph(file_dir, ee_relative, dest_dir):
+    # Plot the ee_relative data
+    fig, axs = plt.subplots(3, 2, figsize=(10, 12))
+
+    # Plot positions (x, y, z)
+    axs[0, 0].plot(ee_relative[:, 0], label="X")
+    axs[0, 0].set_title("X Position")
+    axs[0, 0].set_xlabel("Timestep")
+    axs[0, 0].set_ylabel("Position")
+    
+    axs[1, 0].plot(ee_relative[:, 1], label="Y")
+    axs[1, 0].set_title("Y Position")
+    axs[1, 0].set_xlabel("Timestep")
+    axs[1, 0].set_ylabel("Position")
+    
+    axs[2, 0].plot(ee_relative[:, 2], label="Z")
+    axs[2, 0].set_title("Z Position")
+    axs[2, 0].set_xlabel("Timestep")
+    axs[2, 0].set_ylabel("Position")
+
+    # Plot orientations (roll, pitch, yaw in degrees)
+    axs[0, 1].plot(np.degrees(ee_relative[:, 3]), label="rx")
+    axs[0, 1].set_title("rx")
+    axs[0, 1].set_xlabel("Timestep")
+    axs[0, 1].set_ylabel("Delta Angle(degree)")
+    
+    axs[1, 1].plot(np.degrees(ee_relative[:, 4]), label="ry")
+    axs[1, 1].set_title("ry")
+    axs[1, 1].set_xlabel("Timestep")
+    axs[1, 1].set_ylabel("Delta Angle(degree)")
+    
+    axs[2, 1].plot(np.degrees(ee_relative[:, 5]), label="rz")
+    axs[2, 1].set_title("rz")
+    axs[2, 1].set_xlabel("Timestep")
+    axs[2, 1].set_ylabel("Delta Angle(degree)")
+
+    # Adjust layout to avoid overlap
+    plt.tight_layout()
+    
+    # base_dir = Path(__file__).parent  # This will get the directory where your Python file is located
+    graph_dir = Path(dest_dir) / 'graph'  # Create the 'graph' folder path
+
+    # Create the 'graph' directory if it doesn't exist
+    if not graph_dir.exists():
+        os.makedirs(graph_dir)
+        print(f"Created 'graph' directory at {graph_dir}")
+
+    # Save the figure in the 'graph' folder
+    plot_filename = Path(file_dir).stem + '_ee_relative_plot.png'
+    plot_path = graph_dir / plot_filename
+    plt.savefig(plot_path)
+    plt.close()
+    print(f"Saved plot to {plot_path}")
 
 # Set up argument parser
 parser = argparse.ArgumentParser(description='Process HDF5 files and generate dataset.')
@@ -64,14 +121,31 @@ for spt, file_dirs in file_split.items():
             # Angle
             arti_angles = f['arti_info/angles']
 
-        ee = f['observations/ee_pose'][:]
-        # Create a copy to modify
+        
+        ee = f['observations/ee_pose'][:].astype(np.float32)
+
+
+        N = ee.shape[0]
         ee_relative = ee.copy()
+
+        
+        '''
+        rx ry rz -> euler angles
+        '''
 
         # Calculate difference with previous timestep (except last timestep)
         ee_relative[:-1, :-1] = ee[1:, :-1] - ee[:-1, :-1]
         ee_relative = ee_relative[:-1]
+        
+        for i, ee_rel in enumerate(ee_relative):
+            ee_relative[i, 3:6] = R.from_rotvec(ee_rel[3:6]).as_euler('xyz')
+        
+        
+        
+        
+        
         ee = ee_relative[:]
+        create_graph(file_dir, ee, args.dest_dir)
 
         rgb = f['observations/images']
         rgb_dict = {}
@@ -105,4 +179,5 @@ for spt, file_dirs in file_split.items():
 
         # Save using NumPy's save function
         np.save(file_path, data)
+        
         print("Data saved to", file_path)
